@@ -26,19 +26,19 @@ struct Node {
 	Node(int v = 0, bool en = false, char c = '+', Node *l = NULL, Node *r = NULL):value(v), encode(en), ch(c), left(l), right(r) {}
 };
 
-void huff_in();
-void huff_out();
+void huff_in(char*, char*);
+void huff_out(char*, char*);
 
 vector<Pair> make_dict(string);
 Node *make_huff(vector<Pair>&);
 map<CHAR, string> make_map(Node*);
 
 string code(string);
-string decode(string, Node*, int);
+string decode(string, vector<Pair>&, int);
 void toHuff(map<CHAR, string>&, Node*, string);
 string readFile(string);
 void parse(string, string&, int&, vector<Pair>&t);
-void writeFile(string, int, long, string);
+void writeFile(char *, int, long, string, vector<Pair>&);
 
 string ascToBin(unsigned char);
 string binToAsc(string);

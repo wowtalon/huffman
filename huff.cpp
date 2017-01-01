@@ -1,31 +1,68 @@
 #include "huff.h"
 
-void huff_in() {
-	cout << "请选择您要压缩的文件：" << endl;
-	string file;
-	cin >> file;
-	string source = readFile(file);
-	cout << source << endl;
-	cout << "请选择您要保存的路径：" << endl;
-	cin >> file;
-	cout << code(source) << endl;
-	// writeFile(file, code(source));
+void huff_in(char *in, char *out) {
+	fstream file;
+	// cout << "请选择您要压缩的文件：" << endl;
+	// string f;
+	// cin >> f;
+	string s = ""; 
+	file.open(in, ios::in);
+	while(!file.eof()) {
+		char ch;
+		file.read((char*)&ch, sizeof(char));
+		s.push_back(ch);
+	}
+	file.close();
+	vector<Pair> v = make_dict(s);
+	int size = v.size();
+	long len = s.size();
+	s = code(s);
+	// cout << "请选择您要保存的路径：" << endl;
+	// cin >> f;
+	//file.open(TEST_ZIPPED, ios::binary|ios::out);
+	writeFile(out, size, len, s, v);
 }
 
-void huff_out() {
-	cout << "请选择您要解压的文件：" << endl;
-	string file;
-	cin >> file;
-	string source;
-	int size = 0;
-	vector<Pair> dict;
-	// readFile(file, source, size, dict);
-	Node *root = make_huff(dict);
-	map<CHAR, string> map = make_map(root);
-	
-	cout << "请选择您要保存的路径：" << endl;
-	cin >> file;
-	// writeFile(file, decode(source, root, size));
+void huff_out(char *in, char *out) {
+	fstream file;
+	vector<Pair> v;
+	string s = ""; 
+	int size;
+	long len;
+	char ch;
+	int count;
+	// cout << "请选择您要解压的文件：" << endl;
+	// string f;
+	// cin >> f;
+	file.open(in, ios::binary|ios::in);
+	file.read((char*)&size, sizeof(int));
+	file.read((char*)&len, sizeof(long));
+	// cout << size << " " << len << endl;
+	for(int i = 0; i < size; i++) {
+		file.read((char*)&ch, sizeof(char));
+		file.read((char*)&count, sizeof(int));
+		v.push_back(make_pair<char, int>(ch, count));
+	}
+	while(!file.eof()) {
+		file.read((char*)&ch, sizeof(char));
+		// cout << ch;
+		s.push_back(ch);
+	}
+	string source = "";
+	for(int i = 0; i < s.size(); i++) {
+		source += ascToBin(s[i]);
+	}
+	source = decode(source, v, len);
+	// cout << "Are You OK?" << endl;
+	// cout << source << endl;
+	file.close();
+	// cout << "请选择您要保存的路径：" << endl;
+	// cin >> f;
+	file.open(out, ios::out);
+	for(int i = 0; i < source.size(); i++) {
+		file.write((char*)&source[i], sizeof(char));
+	}
+	file.close();
 }
 
 vector<Pair> make_dict(string s) {
@@ -78,32 +115,14 @@ map<CHAR, string> make_map(Node *root) {
 }
 
 string code(string source) {
-	cout << "==========================coding...========================" << endl;
+	cout << "coding..." << endl;
 	// cout << "source: " << source << endl;
 	string r;
 	vector<Pair> dict = make_dict(source);
 	Node *root = make_huff(dict);
 	map<CHAR, string> map = make_map(root);
 	
-	print(dict);
-	
-	char buffer[255];
-	itoa(dict.size(), buffer, 10);
-	r.append(buffer);
-	r += " ";
-	itoa(source.size(), buffer, 10);
-	r.append(buffer);
-	r += " ";
-	
-	for(vector<Pair>::iterator i = dict.begin(); i != dict.end(); i++) {
-		r += "[";
-		r.push_back((*i).first);
-		// r.push_back(',');
-		itoa((*i).second, buffer, 10);
-		r.append(buffer);
-		r += "]";
-	}
-	
+	// print(dict);
 	string content = "";
 	for(int i = 0; i < source.size(); i++) {
 		content += map[source[i]];
@@ -112,18 +131,19 @@ string code(string source) {
 		content.push_back('0');
 	}
 	// r += content;
-	cout << content << endl;
+	// cout << content << endl;
 	content = binToAsc(content);
 	// cout << content << endl;
 	r.append(content);
-	cout << "============================================================" << endl;
+	cout << "finished." << endl;
 	return r;
 }
 
-string decode(string source, Node *root, int size) {
-	// cout << "===========================source===========================" << endl;
+string decode(string source, vector<Pair> &v, int size) {
+	cout << "decoding..." << endl;
 	// cout << source << endl;
 	string r = "";
+	Node *root = make_huff(v);
 	Node *tmp = root;
 	for(int i = 0; i < source.size() && size > 0; i++) {
 		if(source[i] == '0') tmp = tmp->left;
@@ -136,6 +156,7 @@ string decode(string source, Node *root, int size) {
 			tmp = root;
 		}
 	}
+	cout << "finished." << endl;
 	return r;
 }
 
@@ -198,12 +219,17 @@ void parse(string source, string &content, int &size, vector<Pair> &dict) {
 	}
 }
 
-void writeFile(string file, int size, long len, string content) {
+void writeFile(char *file, int size, long len, string content, vector<Pair> &v) {
 	fstream out;
-	out.open(file.c_str(), ios::binary|ios::out);
+	out.open(file, ios::binary|ios::out);
 	out.write((char*)&size, sizeof(int));
 	out.write((char*)&len, sizeof(long));
+	for(vector<Pair>::iterator i = v.begin(); i != v.end(); i++) {
+		out.write((char*)&((*i).first), sizeof(char));
+		out.write((char*)&((*i).second), sizeof(int));
+	}
 	for(int i = 0; i < content.size(); i++) {
+		// cout << content[i];
 		out.write((char*)&content[i], sizeof(char));
 	}
 	out.close();
@@ -235,7 +261,7 @@ string binToAsc(string bin) {
 			asc = 0;
 		}
 	}
-	cout << r << endl;
+	// cout << r << endl;
 	return r;
 }
 
