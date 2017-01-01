@@ -9,7 +9,7 @@ void huff_in() {
 	cout << "请选择您要保存的路径：" << endl;
 	cin >> file;
 	cout << code(source) << endl;
-	writeFile(file, code(source));
+	// writeFile(file, code(source));
 }
 
 void huff_out() {
@@ -25,7 +25,7 @@ void huff_out() {
 	
 	cout << "请选择您要保存的路径：" << endl;
 	cin >> file;
-	writeFile(file, decode(source, root, size));
+	// writeFile(file, decode(source, root, size));
 }
 
 vector<Pair> make_dict(string s) {
@@ -198,11 +198,13 @@ void parse(string source, string &content, int &size, vector<Pair> &dict) {
 	}
 }
 
-void writeFile(string file, string content) {
-	fstream out(file.c_str());
-	out.clear();
+void writeFile(string file, int size, long len, string content) {
+	fstream out;
+	out.open(file.c_str(), ios::binary|ios::out);
+	out.write((char*)&size, sizeof(int));
+	out.write((char*)&len, sizeof(long));
 	for(int i = 0; i < content.size(); i++) {
-		out << content[i];
+		out.write((char*)&content[i], sizeof(char));
 	}
 	out.close();
 }

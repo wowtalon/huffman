@@ -10,10 +10,11 @@ void test_make_huff();
 void test_code();
 void test_write();
 void test_decode();
+void test1();
 void test();
 
 int main() {
-	test();
+	test1();
 	return 0;
 }
 
@@ -61,7 +62,7 @@ void test_write() {
 	string content = code(file);
 	cout << "选择保存路径：" << endl;
 	file = TEST_ZIPPED;
-	writeFile(file, content);
+	// writeFile(file, content);
 //	fstream outf;
 //	outf.open(file.c_str(), ios::binary|ios::out);
 //	outf.write(content.c_str(), sizeof(content));
@@ -92,12 +93,29 @@ void test_decode() {
 	cout << "请输入保存路径:" << endl;
 	// cin >> file;
 	file = TEST_UNZIPPED;
-	writeFile(file, decode(content, root, size));
+	// writeFile(file, decode(content, root, size));
 	cout << decode(content, root, size) << endl;
 }
 
+void test1() {
+	writeFile(TEST_ZIPPED, 5, 11, "hello,world");
+	fstream file;
+	file.open(TEST_ZIPPED, ios::binary|ios::in);
+	int size;
+	long len;
+	char ch;
+	file.read((char*)&size, sizeof(int));
+	file.read((char*)&len, sizeof(long));
+	cout << size << " " << len << endl;
+	while(len--) {
+		file.read((char*)&ch, sizeof(char));
+		cout << ch;
+	} 
+	file.close();
+}
+
 void test() {
-	test_write();
+	// test_write();
 	test_decode();
 }
 

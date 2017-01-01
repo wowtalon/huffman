@@ -38,7 +38,7 @@ string decode(string, Node*, int);
 void toHuff(map<CHAR, string>&, Node*, string);
 string readFile(string);
 void parse(string, string&, int&, vector<Pair>&t);
-void writeFile(string, string);
+void writeFile(string, int, long, string);
 
 string ascToBin(unsigned char);
 string binToAsc(string);
